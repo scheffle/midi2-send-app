@@ -124,17 +124,11 @@ private:
 	}
 
 	uint8_t getAttributeTypeValue () const { return getValue<uint8_t> ("AttributeType"); }
-
 	uint16_t getAttributeValueValue () const { return getValue<uint16_t> ("AttributeValue"); }
-
 	midi::velocity getVelocityValue () const { return midi::velocity (getValue ("Velocity")); }
-
 	uint8_t getPitchValue () const { return getValue<uint8_t> ("Pitch"); }
-
 	uint8_t getGroupValue () const { return getValue<uint8_t> ("Group"); }
-
 	uint8_t getChannelValue () const { return getValue<uint8_t> ("Channel"); }
-
 	uint8_t getMessageTypeValue () const { return getValue<uint8_t> ("MessageType"); }
 
 	MIDIClientPtr midiClient;
