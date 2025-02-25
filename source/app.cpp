@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "vstgui/standalone/include/helpers/appdelegate.h"
+#include "vstgui/standalone/include/helpers/preferences.h"
 #include "vstgui/standalone/include/helpers/uidesc/customization.h"
 #include "vstgui/standalone/include/helpers/uidesc/modelbinding.h"
 #include "vstgui/standalone/include/helpers/value.h"
@@ -37,10 +38,24 @@ struct CoreMIDIClient : IMIDIClient
 		status =
 		    MIDISourceCreateWithProtocol (client, CFSTR ("MIDI2-Send"), kMIDIProtocol_2_0, &source);
 		assert (status == noErr);
+		Preferences prefs ("CoreMIDI");
+		SInt32 sourceUniqueId;
+		if (auto value = prefs.getNumber<SInt32> ("SourceUniqueID"))
+		{
+			sourceUniqueId = *value;
+			MIDIObjectSetIntegerProperty (source, kMIDIPropertyUniqueID, sourceUniqueId);
+		}
+		else
+		{
+			MIDIObjectGetIntegerProperty (source, kMIDIPropertyUniqueID, &sourceUniqueId);
+			prefs.setNumber ("SourceUniqueID", sourceUniqueId);
+		}
 	}
 
 	~CoreMIDIClient () noexcept
 	{
+		auto& prefs = IApplication::instance ().getPreferences ();
+
 		if (source)
 			MIDIEndpointDispose (source);
 		if (client)
@@ -143,11 +158,11 @@ public:
 
 	App () : Application::DelegateAdapter ({"MIDI2-Send", "1.0.0", VSTGUI_STANDALONE_APP_URI})
 	{
-		midiClient = std::make_shared<CoreMIDIClient> ();
 	}
 
 	void finishLaunching () override
 	{
+		midiClient = std::make_shared<CoreMIDIClient> ();
 		auto controller = std::make_shared<WindowController> (midiClient);
 
 		UIDesc::Config config;
