@@ -32,7 +32,7 @@ project(MIDI2-Send VERSION 0.0.1)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-set(VSTGUI_SRC_DIR "../vstgui" CACHE PATH "Path to the VSTGUI library")
+set(VSTGUI_SRC_DIR "3rdparty/vstgui" CACHE PATH "Path to the VSTGUI library")
 set(NIMIDI2_SRC_DIR "3rdparty/ni-midi2" CACHE PATH "Path to the NI-MIDI2 library")
 
 set(VSTGUI_DISABLE_UNITTESTS 1)

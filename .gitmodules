@@ -1,3 +1,6 @@
 [submodule "3rdparty/ni-midi2"]
 	path = 3rdparty/ni-midi2
 	url = ssh://git@stash.steinberg-intra.net:7999/~ascheffler/ni-midi2.git
+[submodule "3rdparty/vstgui"]
+	path = 3rdparty/vstgui
+	url = https://github.com/steinbergmedia/vstgui.git
