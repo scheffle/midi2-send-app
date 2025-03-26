@@ -14,8 +14,10 @@
 #include "midi/midi2_channel_voice_message.h"
 #include "midi/universal_packet.h"
 
+#if __APPLE__
 #include <CoreMIDI/CoreMIDI.h>
 #include <mach/mach_time.h>
+#endif
 
 using namespace VSTGUI::Standalone;
 
