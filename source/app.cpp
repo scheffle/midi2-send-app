@@ -27,6 +27,7 @@ struct IMIDIClient
 };
 using MIDIClientPtr = std::shared_ptr<IMIDIClient>;
 
+#if __APPLE__
 //------------------------------------------------------------------------
 struct CoreMIDIClient : IMIDIClient
 {
@@ -75,6 +76,7 @@ struct CoreMIDIClient : IMIDIClient
 	MIDIClientRef client {};
 	MIDIEndpointRef source {};
 };
+#endif
 
 //------------------------------------------------------------------------
 struct WindowController : WindowControllerAdapter, UIDesc::CustomizationAdapter
@@ -162,7 +164,9 @@ public:
 
 	void finishLaunching () override
 	{
+#if __APPLE__
 		midiClient = std::make_shared<CoreMIDIClient> ();
+#endif
 		auto controller = std::make_shared<WindowController> (midiClient);
 
 		UIDesc::Config config;
