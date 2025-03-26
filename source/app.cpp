@@ -34,10 +34,11 @@ struct CoreMIDIClient : IMIDIClient
 	CoreMIDIClient ()
 	{
 		auto status = MIDIClientCreateWithBlock (CFSTR ("MIDI2-Send"), &client,
-		                                         ^(const MIDINotification* message) {});
+												 ^(const MIDINotification* message) {
+												 });
 		assert (status == noErr);
 		status =
-		    MIDISourceCreateWithProtocol (client, CFSTR ("MIDI2-Send"), kMIDIProtocol_2_0, &source);
+			MIDISourceCreateWithProtocol (client, CFSTR ("MIDI2-Send"), kMIDIProtocol_2_0, &source);
 		assert (status == noErr);
 		Preferences prefs ("CoreMIDI");
 		SInt32 sourceUniqueId;
@@ -68,7 +69,7 @@ struct CoreMIDIClient : IMIDIClient
 		MIDIEventList eventList {};
 		auto p = MIDIEventListInit (&eventList, kMIDIProtocol_2_0);
 		MIDIEventListAdd (&eventList, sizeof (MIDIEventList), p, mach_absolute_time (),
-		                  packet.size (), packet.data);
+						  packet.size (), packet.data);
 		auto status = MIDIReceivedEventList (source, &eventList);
 		assert (status == noErr);
 	}
@@ -79,26 +80,27 @@ struct CoreMIDIClient : IMIDIClient
 #endif
 
 //------------------------------------------------------------------------
-struct WindowController : WindowControllerAdapter, UIDesc::CustomizationAdapter
+struct WindowController : WindowControllerAdapter,
+						  UIDesc::CustomizationAdapter
 {
 	WindowController (MIDIClientPtr midiClient) : midiClient (midiClient)
 	{
 		model->addValue (Value::make ("Send"), UIDesc::ValueCalls::onEndEdit ([this] (auto& value) {
-			                 if (value.getValue () > 0.5)
-			                 {
-				                 doSendCommand ();
-				                 value.performEdit (0.);
-			                 }
-		                 }));
+							 if (value.getValue () > 0.5)
+							 {
+								 doSendCommand ();
+								 value.performEdit (0.);
+							 }
+						 }));
 		model->addValue (Value::makeStringListValue ("MessageType", {"Note On", "Note Off"}));
 		model->addValue (Value::makeStepValue ("Group", 16));
 		model->addValue (Value::makeStepValue ("Channel", 16));
 		model->addValue (Value::makeStepValue ("Pitch", 127));
 		model->addValue (Value::make ("Velocity", 1., Value::makeRangeConverter (0., 100., 0)));
 		model->addValue (
-		    Value::make ("AttributeType", 0., Value::makeRangeConverter (0., 127., 0)));
+			Value::make ("AttributeType", 0., Value::makeRangeConverter (0., 127., 0)));
 		model->addValue (
-		    Value::make ("AttributeValue", 0., Value::makeRangeConverter (0., 65535., 0)));
+			Value::make ("AttributeValue", 0., Value::makeRangeConverter (0., 65535., 0)));
 	}
 
 	UIDesc::ModelBindingPtr getModel () const { return model; }
@@ -116,7 +118,7 @@ private:
 		auto messageType = getMessageTypeValue ();
 		if (messageType == 0)
 			message = midi::make_midi2_note_on_message (group, channel, pitch, velocity, attribute,
-			                                            attribute_data);
+														attribute_data);
 		else
 		{
 			// TODO: missing midi::make_midi2_note_off_message with attribute support
@@ -125,7 +127,7 @@ private:
 		midiClient->send (message);
 	}
 
-	template <typename T>
+	template<typename T>
 	T getValue (VSTGUI::UTF8StringView valueName) const
 	{
 		if (auto value = model->getValue (valueName))
@@ -153,14 +155,13 @@ private:
 };
 
 //------------------------------------------------------------------------
-class App : public Application::DelegateAdapter, public WindowListenerAdapter
+class App : public Application::DelegateAdapter,
+			public WindowListenerAdapter
 {
 public:
 	MIDIClientPtr midiClient;
 
-	App () : Application::DelegateAdapter ({"MIDI2-Send", "1.0.0", VSTGUI_STANDALONE_APP_URI})
-	{
-	}
+	App () : Application::DelegateAdapter ({"MIDI2-Send", "1.0.0", VSTGUI_STANDALONE_APP_URI}) {}
 
 	void finishLaunching () override
 	{
