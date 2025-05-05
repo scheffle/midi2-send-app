@@ -19,6 +19,10 @@
 #include <mach/mach_time.h>
 #endif
 
+#include <sstream>
+#include <iostream>
+#include <iomanip>
+
 using namespace VSTGUI::Standalone;
 
 //------------------------------------------------------------------------
@@ -81,6 +85,51 @@ struct CoreMIDIClient : IMIDIClient
 #endif
 
 //------------------------------------------------------------------------
+struct HexRangeValueConverter : IValueConverter
+{
+	HexRangeValueConverter (const ValueConverterPtr& baseConverter) : baseConverter (baseConverter)
+	{
+	}
+	VSTGUI::UTF8String valueAsString (IValue::Type value) const override
+	{
+		auto intValue = static_cast<uint64_t> (normalizedToPlain (value));
+		std::stringstream s;
+		try
+		{
+			s << "0x" << std::uppercase << std::hex << intValue;
+		}
+		catch (...)
+		{
+		}
+		return {s.str ()};
+	}
+	IValue::Type stringAsValue (const VSTGUI::UTF8String& string) const override
+	{
+		uint32_t value;
+		try
+		{
+			std::stringstream s (string.getString ());
+			s << std::hex;
+			s >> value;
+		}
+		catch (...)
+		{
+		}
+		return plainToNormalized (value);
+	}
+	IValue::Type plainToNormalized (IValue::Type plain) const override
+	{
+		return baseConverter->plainToNormalized (plain);
+	}
+	IValue::Type normalizedToPlain (IValue::Type normalized) const override
+	{
+		return baseConverter->normalizedToPlain (normalized);
+	}
+
+	ValueConverterPtr baseConverter;
+};
+
+//------------------------------------------------------------------------
 struct WindowController : WindowControllerAdapter,
 						  UIDesc::CustomizationAdapter
 {
@@ -98,10 +147,12 @@ struct WindowController : WindowControllerAdapter,
 		model->addValue (Value::makeStepValue ("Channel", 16));
 		model->addValue (Value::makeStepValue ("Pitch", 127));
 		model->addValue (Value::make ("Velocity", 1., Value::makeRangeConverter (0., 100., 0)));
-		model->addValue (
-			Value::make ("AttributeType", 0., Value::makeRangeConverter (0., 127., 0)));
-		model->addValue (
-			Value::make ("AttributeValue", 0., Value::makeRangeConverter (0., 65535., 0)));
+		model->addValue (Value::make (
+			"AttributeType", 0.,
+			std::make_shared<HexRangeValueConverter> (Value::makeRangeConverter (0., 127., 0))));
+		model->addValue (Value::make (
+			"AttributeValue", 0.,
+			std::make_shared<HexRangeValueConverter> (Value::makeRangeConverter (0., 65535., 0))));
 	}
 
 	UIDesc::ModelBindingPtr getModel () const { return model; }
